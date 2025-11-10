@@ -1,21 +1,35 @@
-FROM node:18-alpine AS build
+#Stage 1: Build React App
+FROM node:18-alpine AS builder
 
 WORKDIR /app
-
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install
+
+
+ARG REACT_APP_API_BASE_URL
+ENV REACT_APP_API_BASE_URL=$REACT_APP_API_BASE_URL
 
 COPY . .
-
 RUN npm run build
 
+# Stage 2: NGINX for production serve
 FROM nginx:alpine
 
-COPY --from=build /app/build /usr/share/nginx/html
+# Create non-root user
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-RUN chown -R nginx:nginx /usr/share/nginx/html
+# Set temp dirs writable for nginx
+RUN mkdir -p /tmp/client_temp /tmp/proxy_temp /tmp/fastcgi_temp /tmp/scgi_temp /tmp/uwsgi_temp && \
+    chown -R appuser:appgroup /tmp
 
-EXPOSE 80
+# Replace nginx full config with our own
+COPY nginx.conf /etc/nginx/nginx.conf
 
-USER nginx
+# Copy built app to nginx html folder
+COPY --from=builder /app/build /usr/share/nginx/html
 
+# Switch to non-root user
+USER appuser
+
+EXPOSE 3000
+CMD ["nginx", "-g", "daemon off;"]

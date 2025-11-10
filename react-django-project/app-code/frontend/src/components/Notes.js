@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../axios';
 import { TextField, Button, Typography, Container, Box, Grid, Card, CardContent, CardActions, Paper } from '@mui/material';
 
 const Notes = () => {

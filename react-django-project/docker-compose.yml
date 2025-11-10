@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:15
+    image: postgres:15-alpine
     container_name: app_postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
@@ -21,35 +21,33 @@ services:
     depends_on:
       - db
     environment:
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_HOST: db
-      DB_PORT: ${DB_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: db     # <<< FIX HERE
+      POSTGRES_PORT: 5432
       DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE}
       SECRET_KEY: ${SECRET_KEY}
       DEBUG: ${DEBUG}
-    command: >
-      sh -c "python manage.py migrate &&
-             gunicorn --bind 0.0.0.0:8000 --workers 3 docker_django_app.wsgi:application"
     expose:
       - "8000"
+    ports:
+      - "8000:8000"
     networks:
       - backend-network
       - frontend-network   # shared with frontend
 
-  frontend:
+  react-app:
     build:
       context: ./app-code/frontend
       dockerfile: Dockerfile
-    container_name: react_frontend
-    restart: always
-    depends_on:
-      - backend
+      args:
+        REACT_APP_API_BASE_URL: ${REACT_APP_API_URL}
     ports:
-      - "3001:80"
+      - "3000:80"
     networks:
       - frontend-network
+    restart: unless-stopped
 
 networks:
   backend-network:
