@@ -31,5 +31,5 @@ COPY --from=builder /app/build /usr/share/nginx/html
 # Switch to non-root user
 USER appuser
 
-EXPOSE 3000
+EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

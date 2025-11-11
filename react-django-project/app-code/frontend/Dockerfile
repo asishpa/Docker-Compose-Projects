@@ -19,8 +19,8 @@ FROM nginx:alpine
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 # Set temp dirs writable for nginx
-RUN mkdir -p /tmp/client_temp /tmp/proxy_temp /tmp/fastcgi_temp /tmp/scgi_temp /tmp/uwsgi_temp && \
-    chown -R appuser:appgroup /tmp
+RUN mkdir -p /tmp/client_temp /var/cache/nginx && \
+    chown -R appuser:appgroup /tmp /var/cache/nginx
 
 # Replace nginx full config with our own
 COPY nginx.conf /etc/nginx/nginx.conf
@@ -31,5 +31,5 @@ COPY --from=builder /app/build /usr/share/nginx/html
 # Switch to non-root user
 USER appuser
 
-EXPOSE 3000
+EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
