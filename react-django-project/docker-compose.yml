@@ -57,5 +57,3 @@ networks:
   backend-network:
   frontend-network:
 
-volumes:
-  postgres_data:
