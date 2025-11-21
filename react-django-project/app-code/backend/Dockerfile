@@ -1,7 +1,7 @@
 FROM python:3.11 AS builder
 
 WORKDIR /app
-
+ENV PYTHONDONTWRITEBYTECODE=1
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -16,5 +16,7 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 
 COPY --from=builder /app /app
 
+ENV PYTHONUNBUFFERED=1 
 
-CMD ["/usr/local/bin/gunicorn", "core.wsgi:application", "--bind=0.0.0.0:8000"]
+
+CMD ["/usr/local/bin/gunicorn", "main.wsgi:application", "--bind=0.0.0.0:8000"]
